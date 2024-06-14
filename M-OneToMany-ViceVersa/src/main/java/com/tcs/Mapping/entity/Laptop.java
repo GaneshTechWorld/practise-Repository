@@ -14,11 +14,9 @@ public class Laptop {
     @Column(name="laptop_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer authorId;
-
     @ManyToOne
-    private Student student;
-
+    @JoinColumn(name="student_id") //specfied foreign key column
+    public Student student;
     @Column(name="laptop_name")
     String laptopName;
-
 }

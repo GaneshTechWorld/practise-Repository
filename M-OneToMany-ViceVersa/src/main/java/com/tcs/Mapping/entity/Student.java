@@ -15,9 +15,18 @@ public class Student {
     Integer rollNo;
 
     @Column(name="student_name")
-    String studentName;
+    public String studentName;
 
-    /*It will create 3rd table studet_laptop that contain laptop_pk and student_pk*/
-    @OneToMany(mappedBy = "laptopName",cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)
+    @JoinColumn(name="student_id")
     private List<Laptop> laptops;
+
+   /* @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)
+    @JoinColumn(name="student_idi")  //student_id named column will be created in laptop table
+    private List<Laptop> laptops;
+    also commented
+     /* @ManyToOne
+    @JoinColumn(name="student_id") //specfied foreign key column
+    public Student student;  other wise this will also created one column
+    */
 }

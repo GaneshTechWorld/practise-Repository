@@ -7,8 +7,9 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class StudentRequestDto {
+
     @Pattern(regexp = "^[A-Za-z]+ [A-Za-z]+$", message = "Student name must be in the format 'FirstName LastName' and contain only letters")
-    @NotBlank(message="Student Name Should Not Blank")
+    @NotBlank(message="Student Name should Not Be Blank..")
     private String studentName;
     @Valid
     private List<CourseRequsestDto> courseList;

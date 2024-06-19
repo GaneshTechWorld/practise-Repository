@@ -19,16 +19,16 @@ import java.util.List;
 
 @Repository
 public interface StudentRepo extends JpaRepository<Student, Serializable>, JpaSpecificationExecutor<Student> {
-     default Specification<Student> findByCriteria(final StudentSearchDto searchRequest) {
+     default Specification<Student> findByCriteria(final String courseName) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicateList = new ArrayList<>();
 
-            if(StringUtils.isNotEmpty(searchRequest.getCourseName())) {
+            if(StringUtils.isNotEmpty(courseName)) {
                 Join<Student, StudentCourse> attMapperJoin = root.join("studentCourseList", JoinType.INNER);
                 Join<StudentCourse, Course> studentCourseCourseJoin = attMapperJoin.join("course");
                 Expression<String> courseNameInTable = studentCourseCourseJoin.get("courseName");
                 Expression<String> caseInSensitiveForCourseName =criteriaBuilder.lower(courseNameInTable);
-                predicateList.add(criteriaBuilder.like(caseInSensitiveForCourseName,searchRequest.getCourseName().toLowerCase()));
+                predicateList.add(criteriaBuilder.like(caseInSensitiveForCourseName,courseName.toLowerCase()));
             }
             query.distinct(true);
             return criteriaBuilder.and(predicateList.toArray(new Predicate[predicateList.size()]));

@@ -24,10 +24,6 @@ class Pulsoor extends TwoWheeler {
 
 public class abstrction {
     public static void main(String args[]){
-       /* System.out.println("...Rahul Mahajan...");
-        Pulsoor obj = new Pulsoor();
-        obj.fuelType();
-        obj.gearNumbers();*/
         TwoWheeler t = new Pulsoor();
         t.gearNumbers();
     }

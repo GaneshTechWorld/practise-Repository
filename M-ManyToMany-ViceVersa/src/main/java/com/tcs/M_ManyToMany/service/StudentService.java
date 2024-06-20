@@ -61,12 +61,17 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public List<String> getStudentSearchData(String studentSearchDto) {
+    public List<StudentResponseDto> getStudentSearchData(StudentSearchDto studentSearchDto) {
         List<Student> studentList = studentRepository.findAll(studentRepository.findByCriteria(studentSearchDto)).stream().collect(Collectors.toList());
-        List<String> studentL = studentList.stream()
-                .map(Student::getStudentName)
-                .collect(Collectors.toList());
-        return studentL;
+        List<StudentResponseDto> studentResponseDtoList = new ArrayList<>();
+        for(Student stud : studentList){
+            StudentResponseDto studentResponse = new StudentResponseDto();
+            studentResponse.setStudentName(stud.getStudentName());
+            List<CourseResponseDto> studentResponseDtoList1 = stud.getStudentCourseList().stream().map(st->{return courseTranslator.courseToResponseDto(st.getCourse());}).collect(Collectors.toList());
+            studentResponse.setCourseResponseDtosList(studentResponseDtoList1);
+            studentResponseDtoList.add(studentResponse);
+        }
+        return studentResponseDtoList;
     }
 
     public List<StudentResponseDto> getAllStudents() {
@@ -78,7 +83,7 @@ public class StudentService {
             for (Student std : studentList) {
                 StudentResponseDto studentResponseDto = new StudentResponseDto();
                 List<Course> courseList = std.getStudentCourseList().stream().map(st -> st.getCourse()).collect(Collectors.toList());
-                List<CourseResponseDto> c = courseList.stream().map(CourseTranslator::courseToResponseDto).collect(Collectors.toList());
+                List<CourseResponseDto> c = courseList.stream().map(st->{return courseTranslator.courseToResponseDto(st);}).collect(Collectors.toList());
                 studentResponseDto.setCourseResponseDtosList(c);
                 studentResponseDto.setStudentName(std.getStudentName());
                 studentResponseDtoList.add(studentResponseDto);

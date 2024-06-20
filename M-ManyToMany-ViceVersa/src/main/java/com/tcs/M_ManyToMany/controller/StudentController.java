@@ -1,9 +1,9 @@
 package com.tcs.M_ManyToMany.controller;
 
 import com.tcs.M_ManyToMany.dto.StudentRequestDto;
+import com.tcs.M_ManyToMany.dto.StudentSearchDto;
 import com.tcs.M_ManyToMany.entity.Student;
 import com.tcs.M_ManyToMany.service.StudentService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +52,9 @@ public class StudentController {
             return new ResponseEntity<>(studentService.updateStudentById(studentRequestDto,studentId),HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("stdByCourseName")
+    @PostMapping("studentSearch")
     @ApiOperation(value = "Search Student Based On Course Name",response = Student.class)
-    public ResponseEntity<Object> getStudentSearch(@RequestParam String courseName){
-        return new ResponseEntity<>( studentService.getStudentSearchData(courseName), HttpStatusCode.valueOf(200));
+    public ResponseEntity<Object> getStudentSearch(@RequestBody StudentSearchDto studentSearchDto){
+        return new ResponseEntity<>( studentService.getStudentSearchData(studentSearchDto), HttpStatusCode.valueOf(200));
     }
 }

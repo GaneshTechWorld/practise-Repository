@@ -9,8 +9,6 @@ import java.io.Serializable;
 @Entity
 @Table(name="student_course")
 @Data
-@Getter
-@Setter
 public class StudentCourse  implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

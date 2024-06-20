@@ -31,8 +31,11 @@ public class CourseTranslator {
         return modelMapper.map(courseDTO, Course.class);
     }
 
+
     public  static CourseResponseDto courseToResponseDto(Course course){
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(course,CourseResponseDto.class);
     }
+
+
 }

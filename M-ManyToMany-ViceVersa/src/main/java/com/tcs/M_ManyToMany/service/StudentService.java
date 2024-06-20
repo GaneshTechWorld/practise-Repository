@@ -1,5 +1,6 @@
 package com.tcs.M_ManyToMany.service;
 
+import com.google.gson.reflect.TypeToken;
 import com.tcs.M_ManyToMany.dto.*;
 import com.tcs.M_ManyToMany.entity.Course;
 import com.tcs.M_ManyToMany.entity.Student;
@@ -7,11 +8,16 @@ import com.tcs.M_ManyToMany.entity.StudentCourse;
 import com.tcs.M_ManyToMany.repo.CourseRepo;
 import com.tcs.M_ManyToMany.repo.StudentRepo;
 import com.tcs.M_ManyToMany.translator.CourseTranslator;
+import org.modelmapper.Condition;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.spi.MappingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,27 +105,31 @@ public class StudentService {
             Optional<Student> existingStud = studentRepository.findById(studentId);
             if (existingStud.isPresent()) {
                 Student existingStudent = existingStud.get();
+                Optional.of(studentRequestDto.getStudentName()).ifPresent(existingStudent::setStudentName);
+                List<Course> existingCoursesList = existingStudent.getStudentCourseList().stream().map(st->st.getCourse()).collect(Collectors.toList());
+                List<Course> coursesRequest = studentRequestDto.getCourseList().stream().map(studentRequest->{return courseTranslator.dtoToCourse(studentRequest);}).collect(Collectors.toList());
 
-                Optional.ofNullable(studentRequestDto.getStudentName()).ifPresent(existingStudent::setStudentName);
-                existingStudent.setRollNo(studentId);
-
-                //List<Course> existingCoursesList = existingStudent.getStudentCourseList().stream().map(st->st.getCourse()).collect(Collectors.toList());
-                List<Course> existingCoursesList = existingStudent.getStudentCourseList().stream().map(StudentCourse::getCourse).collect(Collectors.toList());
-                List<StudentCourse>  existingStudentCoursesList = existingStudent.getStudentCourseList();
-                modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-                modelMapper.getConfiguration().setPropertyCondition(context -> context.getSource() != null);
-                modelMapper.map(studentRequestDto.getCourseList(),existingCoursesList);
-
-
-                existingStudent.setStudentCourseList(existingStudentCoursesList);
+                /*for(int i=0;i<existingCoursesList.size();i++){
+                    if(!coursesRequest.get(i).getCourseName().equals("")){
+                        existingCoursesList.get(i).setCourseName(coursesRequest.get(i).getCourseName());
+                    }
+                }*/
+                Type listType = new TypeToken<List<Course>>() {}.getType();
+                modelMapper.typeMap(Course.class, Course.class).addMappings(mapper -> {
+                    mapper.skip(Course::setCourseId); // Skip courseId mapping
+                });
+                for(int i=0;i<existingCoursesList.size();i++){
+                    Course existingC = existingCoursesList.get(i);
+                    Course requestC = coursesRequest.get(i);
+                    if(!requestC.getCourseName().equals("")){
+                        modelMapper.map(requestC,existingC);
+                    }
+                }
                 studentRepository.save(existingStudent);
-                return "Student Updated Successfully";
-            } else {
-                return "No Resource Found For Update.";
-            }
-        } else {
-            return "Please Insert Proper Student Id";
-        }
+                return "Student Saved Succesfully...";
+            } else
+                return "No Student Found With This Id...";
+        }else
+            return "Please Insert Proper Id...";
     }
-
 }

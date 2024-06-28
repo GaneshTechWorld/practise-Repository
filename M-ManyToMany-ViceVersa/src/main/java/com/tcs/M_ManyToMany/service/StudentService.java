@@ -1,48 +1,38 @@
 package com.tcs.M_ManyToMany.service;
 
-import com.google.gson.reflect.TypeToken;
+import com.tcs.M_ManyToMany.exception.NoRecordsFoundException;
 import com.tcs.M_ManyToMany.dto.*;
 import com.tcs.M_ManyToMany.entity.Course;
 import com.tcs.M_ManyToMany.entity.Student;
 import com.tcs.M_ManyToMany.entity.StudentCourse;
+import com.tcs.M_ManyToMany.mapping.CourseMapping;
+import com.tcs.M_ManyToMany.mapping.StudentMappig;
 import com.tcs.M_ManyToMany.repo.CourseRepo;
 import com.tcs.M_ManyToMany.repo.StudentRepo;
-import com.tcs.M_ManyToMany.translator.CourseTranslator;
-import org.modelmapper.Condition;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.convention.MatchingStrategies;
-import org.modelmapper.spi.MappingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
 
 @Service
 public class StudentService {
     @Autowired
     private StudentRepo studentRepository;
-
     @Autowired
     private CourseRepo courseRepository;
 
     @Autowired
-    private CourseTranslator courseTranslator;
-
-    @Autowired
     private ModelMapper modelMapper;
-
     @Transactional
-    public Student saveStudent(StudentRequestDto requestStudent) {
+    public void saveStudentInfo(StudentRequest requestStudent) {
         Student student = new Student();
-        student.setStudentName(requestStudent.getStudentName());
-
-        List<CourseRequsestDto> courseList = requestStudent.getCourseList();
+        BeanUtils.copyProperties(requestStudent,student);
+        List<CourseRequsest> courseRequestList = requestStudent.getCourseList();
        /*List<StudentCourse> studentCourseList = new ArrayList<>();
          for(CourseRequsestDto course: courseList){
             StudentCourse studentCourse = new StudentCourse();
@@ -50,48 +40,49 @@ public class StudentService {
             studentCourse.setStudent(student);
             studentCourseList.add(studentCourse);
         }*/
-        List<StudentCourse> studentCourseList = courseList.stream().map(courseRequsestDto -> {
-            StudentCourse studentCourse = new StudentCourse();
-            studentCourse.setStudent(student);
-            studentCourse.setCourse(courseTranslator.dtoToCourse(courseRequsestDto));
-            return studentCourse;
-        }).collect(Collectors.toList());
-
-        student.setStudentCourseList(studentCourseList);
-        return studentRepository.save(student);
+        if(!courseRequestList.isEmpty()){
+            List<StudentCourse> studentCourseList = courseRequestList.stream().map(courseRequsest -> {
+                StudentCourse studentCourse = new StudentCourse();
+                studentCourse.setStudent(student);
+               //studentCourse.setCourse(courseTranslator.dtoToCourse(courseRequsest));
+                 studentCourse.setCourse(CourseMapping.INSTANCE.courseRequestToCourseEntity(courseRequsest));
+                return studentCourse;
+            }).collect(Collectors.toList());
+            student.setStudentCourseList(studentCourseList);
+        }
+        studentRepository.save(student);
     }
-
-    public List<StudentResponseDto> getStudentSearchData(StudentSearchDto studentSearchDto) {
-        List<Student> studentList = studentRepository.findAll(studentRepository.findByCriteria(studentSearchDto)).stream().collect(Collectors.toList());
-        List<StudentResponseDto> studentResponseDtoList = new ArrayList<>();
+    public List<StudentResponse> getStudentSearchData(StudentSearch studentSearch) {
+        List<Student> studentList = studentRepository.findAll(studentRepository.findByCriteria(studentSearch)).stream().collect(Collectors.toList());
+        if(studentList.isEmpty()){
+            throw new NoRecordsFoundException("No records found for the given search criteria");
+        }
+        List<StudentResponse> studentResponseList = new ArrayList<>();
         for(Student stud : studentList){
-            StudentResponseDto studentResponse = new StudentResponseDto();
-            studentResponse.setStudentName(stud.getStudentName());
-            List<CourseResponseDto> studentResponseDtoList1 = stud.getStudentCourseList().stream().map(st->{return courseTranslator.courseToResponseDto(st.getCourse());}).collect(Collectors.toList());
-            studentResponse.setCourseResponseDtosList(studentResponseDtoList1);
-            studentResponseDtoList.add(studentResponse);
+            StudentResponse studentResponse = StudentMappig.INSTANCE.studentEntityToStudentResponse(stud);
+            //List<CourseResponse> studentResponseDtoLis = stud.getStudentCourseList().stream().map(st->{return courseTranslator.courseToResponseDto(st.getCourse());}).collect(Collectors.toList());
+            List<CourseResponse> courseResponseList = stud.getStudentCourseList().stream().map(st->{return CourseMapping.INSTANCE.courseEntityToResponse(st.getCourse());}).collect(Collectors.toList());
+            studentResponse.setCourseResponseList(courseResponseList);
+            studentResponseList.add(studentResponse);
         }
-        return studentResponseDtoList;
+        return studentResponseList;
     }
-
-    public List<StudentResponseDto> getAllStudents() {
-        Optional<List<Student>> studentListFromDB = Optional.of(studentRepository.findAll());
-        List<StudentResponseDto> studentResponseDtoList = new ArrayList<>();
-        if (studentListFromDB.isPresent()) {
-            List<Student> studentList = studentListFromDB.get();
-            List<StudentCourse> stdCourseList = new ArrayList<>();
-            for (Student std : studentList) {
-                StudentResponseDto studentResponseDto = new StudentResponseDto();
-                List<Course> courseList = std.getStudentCourseList().stream().map(st -> st.getCourse()).collect(Collectors.toList());
-                List<CourseResponseDto> c = courseList.stream().map(st->{return courseTranslator.courseToResponseDto(st);}).collect(Collectors.toList());
-                studentResponseDto.setCourseResponseDtosList(c);
-                studentResponseDto.setStudentName(std.getStudentName());
-                studentResponseDtoList.add(studentResponseDto);
+    public Object getAllStudents() {
+        Optional<List<Student>> optionalStudentListFromDB = Optional.of(studentRepository.findAll());
+        if (optionalStudentListFromDB.isPresent()) {
+            List<Student> studentListFromDB = optionalStudentListFromDB.get();
+            List<StudentResponse> studentResponsesList = new ArrayList<>();
+            for (Student student : studentListFromDB) {
+                StudentResponse studentResponse =  StudentMappig.INSTANCE.studentEntityToStudentResponse(student);
+                //List<CourseResponse> courseResponseList = student.getStudentCourseList().stream().map(st->{return courseTranslator.courseToResponseDto(st.getCourse());}).collect(Collectors.toList());
+                List<CourseResponse> courseResponseList = student.getStudentCourseList().stream().map(st->{return CourseMapping.INSTANCE.courseEntityToResponse(st.getCourse());}).collect(Collectors.toList());
+                studentResponse.setCourseResponseList(courseResponseList);
+                studentResponsesList.add(studentResponse);
             }
+            return studentResponsesList;
         }
-        return studentResponseDtoList;
+       throw new NoRecordsFoundException("No Student Record Found");
     }
-
     public String deleteStudentById(int studentId) {
         if (studentId >= 1) {
             Optional<Student> student = studentRepository.findById(studentId);
@@ -99,35 +90,27 @@ public class StudentService {
                 studentRepository.delete(student.get());
                 return "Student Deleted Succesfully..";
             } else {
-                return "No Record Found With this Id";
+                throw new NoRecordsFoundException("No records found for the given search criteria");
             }
         }
         return null;
     }
     @Transactional
-    public String updateStudentById(StudentRequestDto studentRequestDto,int studentId) {
+    public String updateStudentById(StudentRequest studentRequest, int studentId) {
         if ( studentId >= 0) {
-            Optional<Student> existingStud = studentRepository.findById(studentId);
-            if (existingStud.isPresent()) {
-                Student existingStudent = existingStud.get();
-                Optional.of(studentRequestDto.getStudentName()).ifPresent(existingStudent::setStudentName);
-                List<Course> existingCoursesList = existingStudent.getStudentCourseList().stream().map(st->st.getCourse()).collect(Collectors.toList());
-                List<Course> coursesRequest = studentRequestDto.getCourseList().stream().map(studentRequest->{return courseTranslator.dtoToCourse(studentRequest);}).collect(Collectors.toList());
+            Optional<Student> optionalStudent = studentRepository.findById(studentId);
+            if (optionalStudent.isPresent()) {
+                Student existingStudent = optionalStudent.get();
+                StudentMappig.INSTANCE.updateStudentFromRequest(studentRequest,existingStudent);
 
-                /*for(int i=0;i<existingCoursesList.size();i++){
-                    if(!coursesRequest.get(i).getCourseName().equals("")){
-                        existingCoursesList.get(i).setCourseName(coursesRequest.get(i).getCourseName());
-                    }
-                }*/
-                Type listType = new TypeToken<List<Course>>() {}.getType();
-                modelMapper.typeMap(Course.class, Course.class).addMappings(mapper -> {
-                    mapper.skip(Course::setCourseId); // Skip courseId mapping
-                });
+                List<Course> existingCoursesList = existingStudent.getStudentCourseList().stream().map(st->st.getCourse()).collect(Collectors.toList());
+               // List<Course> coursesRequest = studentRequest.getCourseList().stream().map(studentReq->{return courseTranslator.dtoToCourse(studentReq);}).collect(Collectors.toList());
+                List<Course> coursesRequest = studentRequest.getCourseList().stream().map(studentReq->{return CourseMapping.INSTANCE.courseRequestToCourseEntity(studentReq);}).collect(Collectors.toList());
                 for(int i=0;i<existingCoursesList.size();i++){
                     Course existingC = existingCoursesList.get(i);
                     Course requestC = coursesRequest.get(i);
                     if(!requestC.getCourseName().equals("")){
-                        modelMapper.map(requestC,existingC);
+                        CourseMapping.INSTANCE.updateCourseFromRequest(requestC, existingC);
                     }
                 }
                 studentRepository.save(existingStudent);

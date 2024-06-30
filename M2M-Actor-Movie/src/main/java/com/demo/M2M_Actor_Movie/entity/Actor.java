@@ -1,5 +1,7 @@
 package com.demo.M2M_Actor_Movie.entity;
 
+import com.demo.M2M_Actor_Movie.enums.ActorGender;
+import com.demo.M2M_Actor_Movie.enums.ActorRole;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,7 +24,13 @@ public class Actor {
     @Column(name="age")
     private Double actorAge;
     @Column(name="gender")
-    private String actorGender;
+    @Enumerated(EnumType.STRING)
+    private ActorGender actorGender;
+
+    @Column(name="role")
+    @Enumerated(EnumType.STRING)
+    private ActorRole actorRole;
+
     @Column(name="address")
     private String actorAddress;
     @Column(name="mobile")

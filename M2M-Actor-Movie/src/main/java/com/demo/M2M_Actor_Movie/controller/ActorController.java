@@ -2,6 +2,8 @@ package com.demo.M2M_Actor_Movie.controller;
 
 import com.demo.M2M_Actor_Movie.dto.ActorRequest;
 import com.demo.M2M_Actor_Movie.dto.ActorSearch;
+import com.demo.M2M_Actor_Movie.entity.Actor;
+import com.demo.M2M_Actor_Movie.exception.CustomException;
 import com.demo.M2M_Actor_Movie.service.ActorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +34,16 @@ public class ActorController {
     }
     @GetMapping("getAllActors")
     public ResponseEntity<Object> getAllActors(){
-        return new ResponseEntity<>(actorService.getAllActors(), HttpStatusCode.valueOf(200));
+        Object obj = actorService.getAllActors();
+        if(obj instanceof Actor){
+            return new ResponseEntity<>(actorService.getAllActors(), HttpStatusCode.valueOf(200));
+        }else
+            throw new CustomException("Internal Server Problem");
     }
     @DeleteMapping("deleteActor")
     public ResponseEntity<Object> deleteActorById(@RequestParam Integer actorId){
         String status;
-        if(!actorId.equals("")  || actorId != null){
+        if(!actorId.equals("")  && actorId != null){
             return new ResponseEntity<>(actorService.deleteActorById(actorId), HttpStatus.OK);
         }
         return new ResponseEntity<>("Please Enter Proper Id..", HttpStatus.BAD_REQUEST);

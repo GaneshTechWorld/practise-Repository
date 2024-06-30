@@ -10,6 +10,7 @@ class Course{
 
 public class TernaryOperator {
     public static void main(String[] args) {
+
 /*       int score = 90;
        String grade = (score > 95 && score <=100) ? "A+" :
                       (score > 90 && score <=95) ? "A" :
@@ -30,8 +31,9 @@ public class TernaryOperator {
 
       // String value = (!name.isEmpty()) ? "String is not empty" : "String is empty";
 
-        Course a = new Course();
+/*        Course a = new Course();
        String aCourseName =  (a.getCourseName() != null) ? a.getCourseName() : "No Course";
-      System.out.print(aCourseName);
+      System.out.print(aCourseName);*/
+
     }
 }

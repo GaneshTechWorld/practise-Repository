@@ -1,7 +1,5 @@
 package com.demo.M2M_Actor_Movie.controller;
 
-import com.demo.M2M_Actor_Movie.dto.ActorRequest;
-import com.demo.M2M_Actor_Movie.dto.ActorSearch;
 import com.demo.M2M_Actor_Movie.dto.MovieRequest;
 import com.demo.M2M_Actor_Movie.dto.MovieSearch;
 import com.demo.M2M_Actor_Movie.service.MovieService;
@@ -30,8 +28,7 @@ public class MovieController {
             });
             return ResponseEntity.badRequest().body(errorMessageBuilder.toString());
         }
-        movieService.saveMovieInfo(movie);
-        return ResponseEntity.ok("Movie saved successfully");
+        return new ResponseEntity<> (movieService.saveMovieInfo(movie),HttpStatus.OK);
     }
     @GetMapping("getAllMovie")
     public ResponseEntity<Object> getAllMoviesDetails(){

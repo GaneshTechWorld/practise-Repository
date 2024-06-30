@@ -1,5 +1,7 @@
 package com.demo.M2M_Actor_Movie.entity;
 
+import com.demo.M2M_Actor_Movie.enums.MovieGenre;
+import com.demo.M2M_Actor_Movie.enums.MovieStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -26,6 +28,10 @@ public class Movie {
     private String movieProducer;
     @Column(name="director")
     private String movieDirector;
+    @Enumerated(EnumType.STRING)
+    private MovieGenre movieGenre;
+    @Enumerated(EnumType.STRING)
+    private MovieStatus movieStatus;
     @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yy")
     @Column(name="release_date")

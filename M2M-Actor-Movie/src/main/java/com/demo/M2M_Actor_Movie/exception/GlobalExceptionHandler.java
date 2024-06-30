@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleNoRecordsFoundException(CustomException ex) {
-        ErrorResponse errorResponse = new ErrorResponse("No records found", ex.getMessage(),HttpStatus.NOT_FOUND);
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(),HttpStatus.NOT_ACCEPTABLE);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 }

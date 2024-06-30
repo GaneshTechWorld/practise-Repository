@@ -19,18 +19,24 @@ import java.util.stream.Collectors;
 public class MovieService {
     @Autowired
     MovieRepository movieRepository;
-    public void saveMovieInfo(MovieRequest mvi) {
-        Movie movie = MovieMapper.INSTANCE.movieRequestToMovieEntityMapping(mvi);
-        List<ActorMovieJoin> actorMovieJoinList = new ArrayList<>();
-        for(ActorMovieJoinRequest actorMovieRequestJoin : mvi.getActorMovieJoinRequestList()){
-            ActorMovieJoin actorMovieJoin = new ActorMovieJoin();
-            Actor actor = ActorMapper.INSTANCE.actorRequestToActorEntityMapping(actorMovieRequestJoin.getActorRequest());
-            actorMovieJoin.setMovie(movie);
-            actorMovieJoin.setActor(actor);
-            actorMovieJoinList.add(actorMovieJoin);
-        }
-        movie.setActorMovieJoinList(actorMovieJoinList);
-        movieRepository.save(movie);
+    public String saveMovieInfo(MovieRequest mvi) {
+        if(mvi != null){
+            Movie movie = MovieMapper.INSTANCE.movieRequestToMovieEntityMapping(mvi);
+            if(mvi.getActorMovieJoinRequestList().size() !=0){
+                List<ActorMovieJoin> actorMovieJoinList = new ArrayList<>();
+                for(ActorMovieJoinRequest actorMovieRequestJoin : mvi.getActorMovieJoinRequestList()){
+                    ActorMovieJoin actorMovieJoin = new ActorMovieJoin();
+                    Actor actor = ActorMapper.INSTANCE.actorRequestToActorEntityMapping(actorMovieRequestJoin.getActorRequest());
+                    actorMovieJoin.setMovie(movie);
+                    actorMovieJoin.setActor(actor);
+                    actorMovieJoinList.add(actorMovieJoin);
+                }
+                movie.setActorMovieJoinList(actorMovieJoinList);
+            }
+            movieRepository.save(movie);
+            return  "Movie Recrod Saved Succesfully..";
+        }else
+            return "Please Enter Movie Data";
     }
     public Object getAllMovies() {
         Optional<List<Movie>> optionalMoviesList = Optional.ofNullable(movieRepository.findAll());
@@ -92,7 +98,7 @@ public class MovieService {
                 alreayPresentActor.setActorAddress(requestedActor.getActorAddress());
             if(!requestedActor.getActorMobileNo().isEmpty() && requestedActor.getActorMobileNo() != null)
                 alreayPresentActor.setActorMobileNo(requestedActor.getActorMobileNo());
-            if(!requestedActor.getActorGender().isEmpty() && requestedActor.getActorGender() != null)
+            if(!requestedActor.getActorGender().equals("") && requestedActor.getActorGender() != null)
                 alreayPresentActor.setActorGender(requestedActor.getActorGender());
             if(requestedActor.getActorAge() > 0 )
                 alreayPresentActor.setActorAge(requestedActor.getActorAge());

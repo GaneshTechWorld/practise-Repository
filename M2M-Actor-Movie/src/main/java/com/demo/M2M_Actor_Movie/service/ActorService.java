@@ -4,6 +4,7 @@ import com.demo.M2M_Actor_Movie.dto.*;
 import com.demo.M2M_Actor_Movie.entity.Actor;
 import com.demo.M2M_Actor_Movie.entity.ActorMovieJoin;
 import com.demo.M2M_Actor_Movie.entity.Movie;
+import com.demo.M2M_Actor_Movie.enums.ActorGender;
 import com.demo.M2M_Actor_Movie.exception.CustomException;
 import com.demo.M2M_Actor_Movie.mapping.ActorMapper;
 import com.demo.M2M_Actor_Movie.mapping.MovieMapper;
@@ -80,7 +81,7 @@ public Object updateActor(ActorRequest actorRequest, int actorId) {
         if (actorRequest.getActorAddress() != null && !actorRequest.getActorAddress().isEmpty())
             actor.setActorAddress(actorRequest.getActorAddress());
         if (actorRequest.getActorGender() != null && !actorRequest.getActorGender().isEmpty())
-            actor.setActorGender(actorRequest.getActorGender());
+            actor.setActorGender(ActorGender.valueOf(actorRequest.getActorGender()));
         if (actorRequest.getActorMobileNo() != null && !actorRequest.getActorMobileNo().isEmpty())
             actor.setActorMobileNo(actorRequest.getActorMobileNo());
 
